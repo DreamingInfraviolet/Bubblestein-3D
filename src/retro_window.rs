@@ -57,20 +57,11 @@ impl<'a> RetroWindow<'a> {
                         buffer_size:buffer_size})
     }
 
-    pub fn draw(&mut self) {
-        let wlim = self.buffer_size.w as usize;
-        let hlim = self.buffer_size.h as usize;
-
-        self.window_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-            for y in 0..hlim {
-                for x in 0..wlim {
-                    let offset = y*pitch + x*4;
-                    buffer[offset + 0] = x as u8;
-                    buffer[offset + 1] = y as u8;
-                    buffer[offset + 2] = 0;
-                }
-            }
-        }).unwrap();
+    pub fn draw<F>(&mut self, draw_fn : F) where F : Fn(&mut [u8], usize, usize, usize) -> () {
+        let height = self.buffer_size.h as usize;
+        let width  = self.buffer_size.w as usize;
+        let meta   = |a : &mut [u8], b : usize| -> () { draw_fn(a, b, width, height) }; 
+        self.window_texture.with_lock(None, meta).unwrap();
     }
 
     pub fn display(&mut self) {
