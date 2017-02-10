@@ -1,6 +1,9 @@
 [package]
-name = "Bubblestein3D"
+name = "bubblestein3d"
 version = "0.1.0"
-authors = ["light"]
+authors = ["lightofanima"]
 
 [dependencies]
+piston = "0.31.3"
+piston_window = "0.64.0"
+piston2d-graphics = "0.21.1"
