@@ -1,25 +1,82 @@
-use piston_window::*;
+use sdl2;
+use std::error::Error;
+use util_math::Size;
 
-pub struct RetroWindow {
-    window : PistonWindow,
+pub struct RetroWindow<'a> {
+    sdl_context : sdl2::Sdl,
+    video_system : sdl2::VideoSubsystem,
+    renderer : sdl2::render::Renderer<'a>,
+    window_texture : sdl2::render::Texture,
+    buffer_size : Size,
 }
 
-impl RetroWindow {
+/* Multiples the resolution by a positive integer so that it fits within the maximum bounds */
+fn upsize_resolution(initial : Size, max : Size) -> Size {
+    initial * (max / initial)
+}
 
+impl<'a> RetroWindow<'a> {
     pub fn new(title : &str, upsize : bool) -> Result<RetroWindow, String> {
-        let window = try!(WindowSettings::new(title, [320, 200]).build());
-        Ok(RetroWindow { window:window })
+        let buffer_size = Size { w:320, h:200 };
+
+        // Decide on actual window display resolution
+        let window_size =   if upsize
+                            { upsize_resolution(buffer_size, Size { w : 1900, h : 1200 }) }
+                            else
+                            { buffer_size };
+
+        // Create SDL things
+        let sdl_context  = try!(sdl2::init());
+        let video_system = try!(sdl_context.video());
+        let window       = match video_system.window(title, window_size.w, window_size.h)
+                            .position_centered()
+                            .opengl()
+                            .build() {
+            Ok(window) => window,
+            Err(e)     => return Err(e.description().to_string()),
+        };
+
+        // For type reasons, this consumes the window.
+        // Use Renderer::get_parent() to get the window back.
+        let renderer = match window.renderer().build() {
+            Ok(renderer) => renderer,
+            Err(e)       => return Err(e.description().to_string()),
+        };
+
+        // Create texture to draw to
+        let pixel_format       = sdl2::pixels::PixelFormatEnum::RGBA8888;
+        let window_texture = match renderer.create_texture_streaming(pixel_format, buffer_size.w, buffer_size.h) {
+            Ok(texture)        => texture,
+            Err(e)             => return Err(e.description().to_string()),
+        };
+
+        Ok(RetroWindow {sdl_context:sdl_context,
+                        video_system:video_system,
+                        renderer:renderer,
+                        window_texture:window_texture,
+                        buffer_size:buffer_size})
     }
 
     pub fn draw(&mut self) {
-        while let Some(e) = self.window.next() {
-            self.window.draw_2d(&e, |c, g| {
-                clear([1.0; 4], g);
-                rectangle([1.0, 0.0, 0.0, 1.0], // red
-                        [0.0, 0.0, 100.0, 100.0],
-                        c.transform, g);
-            });
-        }
+        let wlim = self.buffer_size.w as usize;
+        let hlim = self.buffer_size.h as usize;
+
+        self.window_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+            for y in 0..hlim {
+                for x in 0..wlim {
+                    let offset = y*pitch + x*4;
+                    buffer[offset + 0] = x as u8;
+                    buffer[offset + 1] = y as u8;
+                    buffer[offset + 2] = 0;
+                }
+            }
+        }).unwrap();
+    }
+
+    pub fn display(&mut self) {
+        self.renderer.clear();
+        self.renderer.copy(&self.window_texture, None, None).unwrap();
+        self.renderer.present();
     }
 
 }

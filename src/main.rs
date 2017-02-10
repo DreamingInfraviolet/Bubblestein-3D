@@ -1,14 +1,13 @@
-extern crate piston_window;
+extern crate sdl2;
+extern crate nalgebra as na;
 mod retro_window;
+mod util_math;
 
 fn main() {
-    let mut window = match retro_window::RetroWindow::new("Bubblestein 3D", true) {
-        Ok(window) => window,
-        Err(msg)   => {
-            println!("{}", msg);
-            panic!("Aaaah")
-        }
-    };
+    let mut window = retro_window::RetroWindow::new("Bubblestein 3D", true).expect("Could not create window");
 
-    window.draw();
+    loop {
+        window.draw();
+        window.display();
+    }
 }

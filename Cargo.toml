@@ -4,6 +4,5 @@ version = "0.1.0"
 authors = ["lightofanima"]
 
 [dependencies]
-piston = "0.31.3"
-piston_window = "0.64.0"
-piston2d-graphics = "0.21.1"
+sdl2 = "0.28"
+nalgebra = "0.10.*"
