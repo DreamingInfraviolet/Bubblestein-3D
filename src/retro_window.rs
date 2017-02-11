@@ -1,6 +1,8 @@
 use sdl2;
 use std::error::Error;
 use util_math::Size;
+use std::collections::HashSet;
+use sdl2::keyboard::Keycode;
 
 pub struct RetroWindow<'a> {
     sdl_context : sdl2::Sdl,
@@ -70,4 +72,24 @@ impl<'a> RetroWindow<'a> {
         self.renderer.present();
     }
 
+    pub fn handle_events(&mut self) -> bool {
+        use sdl2::event::Event;
+        use sdl2::keyboard::Keycode;
+
+        for event in self.sdl_context.event_pump().unwrap().wait_iter() {
+            match event {
+                Event::KeyDown{ keycode: Some(keycode), ..} => {
+                    if keycode == Keycode::Escape { return false }
+                }
+                Event::Quit{..} => return false,
+                _ => ()
+            }
+        }
+
+        true
+    }
+
+    pub fn keyboard_state(&self) -> HashSet<Keycode> {
+        self.sdl_context.event_pump().unwrap().keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect()
+    }
 }
