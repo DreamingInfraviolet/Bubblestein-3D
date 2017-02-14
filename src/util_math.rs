@@ -2,6 +2,8 @@ use std::ops::Add;
 use std::ops::Mul;
 use std::ops::Sub;
 use std::ops::Div;
+use na;
+use std::cmp::Ord;
 
 #[derive(Copy, Clone)]
 pub struct Size {
@@ -35,4 +37,13 @@ impl Div for Size {
     fn div(self, other: Size) -> Size {
         Size { w: self.w / other.w, h: self.h / other.h }
     }
+}
+
+pub fn lerp(v1 : na::Vector2<f64>, v2 : na::Vector2<f64>, t : f64) -> na::Vector2<f64> {
+    v1 + (v2 - v1) * t
+}
+
+pub fn clamp<T>(x : T, min : T, max : T) -> T 
+    where T : Ord {
+    if x > max { max } else if x < min { min } else { x }
 }

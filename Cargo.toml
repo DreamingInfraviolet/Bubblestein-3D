@@ -6,3 +6,4 @@ authors = ["lightofanima"]
 [dependencies]
 sdl2 = "0.28"
 nalgebra = "0.10.*"
+image = "*"
