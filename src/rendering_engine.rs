@@ -5,10 +5,19 @@ use util_math;
 use util_math::clamp;
 use texture::Texture;
 
+pub fn clear(target_surface : &mut[u8], pitch : usize, height : usize) {
+       let max = pitch * height;
+       for i in 0..max {
+           target_surface[i] = 0u8;
+       }
+}
+
 pub fn draw(scene : &Scene, target_surface : &mut[u8], pitch : usize, width : usize, height : usize) {
     let (v1, v2) = get_raycast_interval_vectors(1.0, scene.camera().fov, scene.camera().orientation);
+
     for i in 0..(width as i32) {
         // println!("col {}", i);
+        
         let ray_point = util_math::lerp(v1, v2, (i as f64) / (width as f64 - 1.0));
         draw_scanline(scene, target_surface, i, height as i32, ray_point, pitch);
     }
@@ -32,9 +41,9 @@ fn draw_scanline(scene : &Scene, target_surface : &mut[u8], target_x : i32, targ
     match collision {
         Some(RaycastCollision{distance, position, colour_index, tangent}) => {
             // Generate scanline based on collision information
-            let wall_height = deduce_scanline_wall_height(target_x as f64 + 1.0, scene.camera().fov);
+            let wall_height = deduce_scanline_wall_height(distance, scene.camera().fov);
             let wall_height = clamp(wall_height, 0, target_height);
-
+            
             // println!("wall_height {}", wall_height);
             
             let start_of_wall_y = (target_height - wall_height) / 2;
@@ -51,7 +60,7 @@ fn draw_scanline(scene : &Scene, target_surface : &mut[u8], target_x : i32, targ
         None => {
             // Generate default scanline
             for y in 0..target_height {
-                set_buffer_colour(target_surface, 100u8, target_x, y, pitch);
+                set_buffer_colour(target_surface, 0u8, target_x, y, pitch);
             }
         }
     }

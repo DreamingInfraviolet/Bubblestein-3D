@@ -1,8 +1,10 @@
 use camera::Camera;
 use na::Vector2;
 use na;
+use na::AbsoluteRotate;
 
 const player_movement_speed : f64 =  1.0;
+const player_turn_speed : f64 = 0.01;
 
 pub struct Player {
     pub camera : Camera,
@@ -21,7 +23,17 @@ impl Player {
     }
 
     pub fn walk(&mut self) {
-        self.camera.position += na::normalize(&self.movement_vector) * player_movement_speed;
-        self.movement_vector = Vector2{ x: 0.0, y: 0.0 };
+        let zero = na::Vector2{x: 0.0, y:0.0};
+        if !na::approx_eq(&self.movement_vector, &zero) {
+            let velocity_vector = na::normalize(&self.movement_vector) * player_movement_speed;
+            let rotation = na::Rotation2::new(na::Vector1{x: self.camera.orientation});
+            let rotation = na::to_rotation_matrix(&rotation);
+            self.camera.position += na::rotate(&rotation, &velocity_vector);
+            self.movement_vector = Vector2{ x: 0.0, y: 0.0 };
+        }
+    }
+
+    pub fn turn_right(&mut self, speed : f64) {
+        self.camera.orientation += player_turn_speed * speed;
     }
 }

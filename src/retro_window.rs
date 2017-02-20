@@ -15,6 +15,7 @@ pub enum BubbleEvent {
     Quit,
     MoveForward { speed_multiplier : f64 },
     MoveRight { speed_multiplier : f64 },
+    TurnRight { speed_multiplier : f64 },
     }
 
 /* Multiples the resolution by a positive integer so that it fits within the maximum bounds */
@@ -80,8 +81,8 @@ impl<'a> RetroWindow<'a> {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
         let mut events = Vec::new();
-
-        for event in self.sdl_context.event_pump().unwrap().wait_iter() {
+        
+        for event in self.sdl_context.event_pump().unwrap().poll_iter() {
             match event {
                 Event::KeyDown{ keycode: Some(keycode), ..} => {
                     if keycode == Keycode::Escape { events.push(BubbleEvent::Quit); }
@@ -89,7 +90,8 @@ impl<'a> RetroWindow<'a> {
                     else if keycode == Keycode::S { events.push(BubbleEvent::MoveForward { speed_multiplier: -1.0 }); }
                     else if keycode == Keycode::D { events.push(BubbleEvent::MoveRight { speed_multiplier: 1.0 }); }
                     else if keycode == Keycode::A { events.push(BubbleEvent::MoveRight { speed_multiplier: -1.0 }); }
-                    
+                    else if keycode == Keycode::Right { events.push(BubbleEvent::TurnRight { speed_multiplier: 1.0 }); }
+                    else if keycode == Keycode::Left { events.push(BubbleEvent::TurnRight { speed_multiplier: -1.0 }); }
                 }
                 Event::Quit{..} => events.push(BubbleEvent::Quit),
                 _ => ()

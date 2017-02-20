@@ -61,7 +61,7 @@ pub fn raycast(origin : na::Vector2<f64>, direction : na::Vector2<f64>, worldmap
         }
     }
 
-    let distance = if edirection == Direction::HORIZONTAL {
+    let distance = if edirection == Direction::VERTICAL {
         (map_x as f64 - origin.x + (1.0 - stepX as f64) / 2.0) / direction.x
     } else {
         (map_y as f64 - origin.y + (1.0 - stepY as f64) / 2.0) / direction.y

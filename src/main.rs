@@ -22,10 +22,10 @@ fn main() {
     let mut camera = Camera{position: na::Vector2{x: 0.0, y: 0.0}, orientation: 0.0, fov: 1.5708};
     let mut player = Player::new(camera);
     let mut scene = Scene{ worldmap: texture, player: player };
-    
+
     loop {
         let start_time = time::SystemTime::now();
-        
+
         let events = window.ennumerate_events();
         let mut done = false;
 
@@ -34,6 +34,7 @@ fn main() {
                 BubbleEvent::Quit => done = true,
                 BubbleEvent::MoveForward { speed_multiplier } => scene.player.add_movement_vector(na::Vector2{ x: speed_multiplier, y: 0.0 }),
                 BubbleEvent::MoveRight { speed_multiplier } => scene.player.add_movement_vector(na::Vector2{ x: 0.0, y: speed_multiplier }),
+                BubbleEvent::TurnRight { speed_multiplier } => scene.player.turn_right(speed_multiplier),
             };
         }
 
@@ -44,6 +45,7 @@ fn main() {
         scene.player.walk();
 
         window.draw(|buffer: &mut [u8], pitch: usize, width : usize, height : usize| {
+            rendering_engine::clear(buffer, pitch, height);
             rendering_engine::draw(&scene, buffer, pitch, width, height);
             // for y in 0..height {
             //     for x in 0..width {
@@ -65,6 +67,5 @@ fn main() {
             Ok(time) => std::thread::sleep(time),
             _ => () 
         }
-
     }
 }
