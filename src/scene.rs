@@ -1,15 +1,15 @@
 use texture::Texture;
+use player::Player;
 use camera::Camera;
 
 pub struct Scene {
     // textures : Vec<Texture>,
     pub worldmap : Texture,
-    pub camera   : Camera,
+    pub player   : Player,
 }
 
 impl Scene {
-
-    pub fn new(texture : Texture, camera: Camera) -> Scene {
-        Scene { worldmap: texture, camera: camera}
+    pub fn camera(&self) -> &Camera {
+        &self.player.camera
     }
 }

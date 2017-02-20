@@ -4,10 +4,9 @@ use na;
 use util_math;
 use util_math::clamp;
 use texture::Texture;
-use image;
 
 pub fn draw(scene : &Scene, target_surface : &mut[u8], pitch : usize, width : usize, height : usize) {
-    let (v1, v2) = get_raycast_interval_vectors(1.0, scene.camera.fov, scene.camera.orientation);
+    let (v1, v2) = get_raycast_interval_vectors(1.0, scene.camera().fov, scene.camera().orientation);
     for i in 0..(width as i32) {
         // println!("col {}", i);
         let ray_point = util_math::lerp(v1, v2, (i as f64) / (width as f64 - 1.0));
@@ -28,12 +27,13 @@ fn get_raycast_interval_vectors(d : f64, f : f64, theta : f64) -> (na::Vector2<f
 }
 
 fn draw_scanline(scene : &Scene, target_surface : &mut[u8], target_x : i32, target_height : i32, ray_point : na::Vector2<f64>, pitch : usize) {
-    let collision = raycast(scene.camera.position, ray_point, &scene.worldmap);
+    let collision = raycast(scene.camera().position, ray_point, &scene.worldmap);
 
     match collision {
         Some(RaycastCollision{distance, position, colour_index, tangent}) => {
             // Generate scanline based on collision information
-            let wall_height = deduce_scanline_wall_height(distance, scene.camera.fov);
+            let wall_height = deduce_scanline_wall_height(target_x as f64 + 1.0, scene.camera().fov);
+            let wall_height = clamp(wall_height, 0, target_height);
 
             // println!("wall_height {}", wall_height);
             
@@ -62,6 +62,7 @@ fn set_buffer_colour(buffer : &mut[u8], colour : u8, x : i32, y : i32, pitch : u
     buffer[index] = colour;
     buffer[index+1] = colour;
     buffer[index+2] = colour;
+    buffer[index+3] = colour;
 }
 
 // fn extract_texture_colour(texture : &Texture, tangent : Direction, wall_height : i32, y_from_wall_start : i32, world_x : i32, world_y : i32) {
@@ -81,6 +82,11 @@ fn set_buffer_colour(buffer : &mut[u8], colour : u8, x : i32, y : i32, pitch : u
 // textures[index]
 // }
 
+/** TODO use vertical fov */
 fn deduce_scanline_wall_height(distance : f64, fov : f64) -> i32 {
-    50
+    let wall_height_in_pixels = 5.0;
+    let height_to_fill_screen = distance * (fov / 2.0).tan() * 2.0;
+    let screen_height = 200.0;
+
+    ((wall_height_in_pixels * screen_height) / height_to_fill_screen) as i32
 }

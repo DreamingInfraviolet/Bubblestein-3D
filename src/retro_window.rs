@@ -6,11 +6,16 @@ use sdl2::keyboard::Keycode;
 
 pub struct RetroWindow<'a> {
     sdl_context : sdl2::Sdl,
-    video_system : sdl2::VideoSubsystem,
     renderer : sdl2::render::Renderer<'a>,
     window_texture : sdl2::render::Texture,
     buffer_size : Size,
 }
+
+pub enum BubbleEvent {
+    Quit,
+    MoveForward { speed_multiplier : f64 },
+    MoveRight { speed_multiplier : f64 },
+    }
 
 /* Multiples the resolution by a positive integer so that it fits within the maximum bounds */
 fn upsize_resolution(initial : Size, max : Size) -> Size {
@@ -53,7 +58,6 @@ impl<'a> RetroWindow<'a> {
         };
 
         Ok(RetroWindow {sdl_context:sdl_context,
-                        video_system:video_system,
                         renderer:renderer,
                         window_texture:window_texture,
                         buffer_size:buffer_size})
@@ -72,24 +76,26 @@ impl<'a> RetroWindow<'a> {
         self.renderer.present();
     }
 
-    pub fn handle_events(&mut self) -> bool {
+    pub fn ennumerate_events(&mut self) -> Vec<BubbleEvent> {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
+        let mut events = Vec::new();
 
         for event in self.sdl_context.event_pump().unwrap().wait_iter() {
             match event {
                 Event::KeyDown{ keycode: Some(keycode), ..} => {
-                    if keycode == Keycode::Escape { return false }
+                    if keycode == Keycode::Escape { events.push(BubbleEvent::Quit); }
+                    else if keycode == Keycode::W { events.push(BubbleEvent::MoveForward { speed_multiplier: 1.0 }); }
+                    else if keycode == Keycode::S { events.push(BubbleEvent::MoveForward { speed_multiplier: -1.0 }); }
+                    else if keycode == Keycode::D { events.push(BubbleEvent::MoveRight { speed_multiplier: 1.0 }); }
+                    else if keycode == Keycode::A { events.push(BubbleEvent::MoveRight { speed_multiplier: -1.0 }); }
+                    
                 }
-                Event::Quit{..} => return false,
+                Event::Quit{..} => events.push(BubbleEvent::Quit),
                 _ => ()
             }
         }
 
-        true
-    }
-
-    pub fn keyboard_state(&self) -> HashSet<Keycode> {
-        self.sdl_context.event_pump().unwrap().keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect()
+        events
     }
 }
