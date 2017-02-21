@@ -36,7 +36,7 @@ fn get_raycast_interval_vectors(d : f64, f : f64, theta : f64) -> (na::Vector2<f
 }
 
 fn draw_scanline(scene : &Scene, target_surface : &mut[u8], target_x : i32, target_height : i32, ray_point : na::Vector2<f64>, pitch : usize) {
-    let collision = raycast(scene.camera().position, ray_point, &scene.worldmap);
+    let collision = raycast(na::Vector2{x: scene.camera().position.x, y: scene.camera().position.y}, ray_point, &scene.worldmap);
 
     match collision {
         Some(RaycastCollision{distance, position, colour_index, tangent}) => {

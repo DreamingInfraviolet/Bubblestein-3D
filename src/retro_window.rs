@@ -86,18 +86,37 @@ impl<'a> RetroWindow<'a> {
             match event {
                 Event::KeyDown{ keycode: Some(keycode), ..} => {
                     if keycode == Keycode::Escape { events.push(BubbleEvent::Quit); }
-                    else if keycode == Keycode::W { events.push(BubbleEvent::MoveForward { speed_multiplier: 1.0 }); }
-                    else if keycode == Keycode::S { events.push(BubbleEvent::MoveForward { speed_multiplier: -1.0 }); }
-                    else if keycode == Keycode::D { events.push(BubbleEvent::MoveRight { speed_multiplier: 1.0 }); }
-                    else if keycode == Keycode::A { events.push(BubbleEvent::MoveRight { speed_multiplier: -1.0 }); }
-                    else if keycode == Keycode::Right { events.push(BubbleEvent::TurnRight { speed_multiplier: 1.0 }); }
-                    else if keycode == Keycode::Left { events.push(BubbleEvent::TurnRight { speed_multiplier: -1.0 }); }
                 }
                 Event::Quit{..} => events.push(BubbleEvent::Quit),
                 _ => ()
             }
         }
 
+        // Handle continuous events
+        let keyboard_state = self.keyboard_state();
+        if keyboard_state.contains(&Keycode::W) {
+            events.push(BubbleEvent::MoveForward { speed_multiplier: 1.0 });
+        }
+        if keyboard_state.contains(&Keycode::A) {
+            events.push(BubbleEvent::MoveRight { speed_multiplier: -1.0 });
+        }
+        if keyboard_state.contains(&Keycode::S) {
+            events.push(BubbleEvent::MoveForward { speed_multiplier: -1.0 });
+        }
+        if keyboard_state.contains(&Keycode::D) {
+            events.push(BubbleEvent::MoveRight { speed_multiplier: 1.0 });
+        }
+        if keyboard_state.contains(&Keycode::Right) {
+            events.push(BubbleEvent::TurnRight { speed_multiplier: 1.0 });
+        }
+        if keyboard_state.contains(&Keycode::Left) {
+            events.push(BubbleEvent::TurnRight { speed_multiplier: -1.0 });
+        }
+
         events
     }
+
+    fn keyboard_state(&self) -> HashSet<Keycode> {
+        self.sdl_context.event_pump().unwrap().keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect()
+     }
 }

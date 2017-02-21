@@ -25,7 +25,8 @@ impl Player {
     pub fn walk(&mut self) {
         let zero = na::Vector2{x: 0.0, y:0.0};
         if !na::approx_eq(&self.movement_vector, &zero) {
-            let velocity_vector = na::normalize(&self.movement_vector) * player_movement_speed;
+            let mut velocity_vector = na::normalize(&self.movement_vector) * player_movement_speed;
+            let velocity_vector = na::Vector2{x: velocity_vector.x, y: -velocity_vector.y};
             let rotation = na::Rotation2::new(na::Vector1{x: self.camera.orientation});
             let rotation = na::to_rotation_matrix(&rotation);
             self.camera.position += na::rotate(&rotation, &velocity_vector);
@@ -34,6 +35,6 @@ impl Player {
     }
 
     pub fn turn_right(&mut self, speed : f64) {
-        self.camera.orientation += player_turn_speed * speed;
+        self.camera.orientation -= player_turn_speed * speed;
     }
 }

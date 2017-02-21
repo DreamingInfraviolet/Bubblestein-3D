@@ -62,10 +62,10 @@ fn main() {
         
         // Sleep to maintain 60hz
         let desired_delta_time = time::Duration::from_millis((1.0 / 60.0 * 1000.0) as u64);
-        let actual_delta_time  = finish_time.duration_since(start_time);
-        match actual_delta_time {
-            Ok(time) => std::thread::sleep(time),
-            _ => () 
+        let actual_delta_time  = finish_time.duration_since(start_time).unwrap();
+
+        if desired_delta_time > actual_delta_time {
+            std::thread::sleep(desired_delta_time - actual_delta_time);
         }
     }
 }
